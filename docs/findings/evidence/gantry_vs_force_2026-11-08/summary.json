@@ -1,0 +1,54 @@
+{
+  "validation": {
+    "seeds": [
+      0
+    ],
+    "objects": 6,
+    "pushes_per_object": 8,
+    "force_limit_N": 15,
+    "lane_m": 0.5,
+    "push_speed_m_s": 0.08,
+    "pad_half_height_m": 0.02,
+    "height_clamped": true,
+    "branch": "feat/gantry-reality-gap",
+    "rows_csv": "rows.csv",
+    "commit": "ea56503"
+  },
+  "summary": {
+    "pushes": 48,
+    "contact_failures": 0,
+    "stray_contact_pushes": 0,
+    "displacement": {
+      "mean_force_m": 0.2658,
+      "mean_robot_m": 0.0172,
+      "mae_m": 0.2486,
+      "corr": 0.8,
+      "max_force_m": 1.073,
+      "max_robot_m": 0.0567
+    },
+    "peak_tilt_mae_rad": 0.536,
+    "topple": {
+      "force": 20,
+      "robot": 2,
+      "agreement": 0.625
+    },
+    "force_ratio": {
+      "mean": 0.577,
+      "std": 0.285,
+      "min": 0.078,
+      "max": 1.031
+    },
+    "tau_ratio": {
+      "mean": 0.986,
+      "min": 0.661
+    },
+    "height_error_mm": {
+      "mean": -0.012,
+      "max_abs": 0.014
+    },
+    "speed_utilization": {
+      "mean": 0.701,
+      "median": 0.824
+    }
+  }
+}

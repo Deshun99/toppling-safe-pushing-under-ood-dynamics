@@ -1,0 +1,25 @@
+---
+title: Implemented target interaction
+---
+sequenceDiagram
+    participant R as Training runner / Evaluator
+    participant P as SAC
+    participant E as PushEnv
+    participant X as ForcePushExecutor
+    participant B as PyBullet cuboid
+    participant W as RewardModel
+    R->>P: predict(observation)
+    P-->>R: Normalized action in [-1, 1]^3
+    R->>E: step(action)
+    E->>E: Map action to physical (h, F, duration)
+    E->>X: execute(cuboid, h, F, duration)
+    X->>B: Apply force and advance physics
+    B-->>X: Object motion samples
+    X-->>E: DenseTrajectory
+    E->>E: Evaluate success, toppling and step limit
+    E->>W: Compute reward from progress and outcome
+    W-->>E: Reward
+    E-->>R: Observation, reward, termination, truncation, info
+    opt Training or per-object fine-tuning
+        R->>P: Store transition and update networks
+    end

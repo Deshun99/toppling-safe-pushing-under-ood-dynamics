@@ -1,0 +1,166 @@
+<?xml version='1.0' encoding='utf-8'?>
+<robot name="sliding_gantry">
+  <material name="blue">
+    <color rgba="0.08 0.30 0.65 1" />
+  </material>
+  <material name="gray">
+    <color rgba="0.48 0.53 0.56 1" />
+  </material>
+  <material name="orange">
+    <color rgba="1 0.34 0.02 1" />
+  </material>
+  <link name="base_link">
+    <inertial>
+      <origin xyz="0.665 -0.16 0.9" />
+      <mass value="10" />
+      <inertia ixx="0.009416666666666669" iyy="1.4124166666666669" izz="1.4136666666666668" ixy="0" ixz="0" iyz="0" />
+    </inertial>
+    <visual>
+      <origin xyz="0.665 -0.16 0.9" />
+      <geometry>
+        <box size="1.73 0.08 0.07" />
+      </geometry>
+      <material name="gray" />
+    </visual>
+    <collision>
+      <origin xyz="0.665 -0.16 0.9" />
+      <geometry>
+        <box size="1.73 0.08 0.07" />
+      </geometry>
+    </collision>
+    <visual>
+      <origin xyz="-0.15 -0.16 0.4325" />
+      <geometry>
+        <box size="0.07 0.08 0.865" />
+      </geometry>
+      <material name="blue" />
+    </visual>
+    <collision>
+      <origin xyz="-0.15 -0.16 0.4325" />
+      <geometry>
+        <box size="0.07 0.08 0.865" />
+      </geometry>
+    </collision>
+    <visual>
+      <origin xyz="1.48 -0.16 0.4325" />
+      <geometry>
+        <box size="0.07 0.08 0.865" />
+      </geometry>
+      <material name="blue" />
+    </visual>
+    <collision>
+      <origin xyz="1.48 -0.16 0.4325" />
+      <geometry>
+        <box size="0.07 0.08 0.865" />
+      </geometry>
+    </collision>
+  </link>
+  <link name="carriage">
+    <inertial>
+      <origin xyz="0 0 0" />
+      <mass value="1" />
+      <inertia ixx="0.0020333333333333336" iyy="0.001666666666666667" izz="0.0020333333333333336" ixy="0" ixz="0" iyz="0" />
+    </inertial>
+    <visual>
+      <origin xyz="0 0 0" />
+      <geometry>
+        <box size="0.10 0.12 0.10" />
+      </geometry>
+      <material name="orange" />
+    </visual>
+    <collision>
+      <origin xyz="0 0 0" />
+      <geometry>
+        <box size="0.10 0.12 0.10" />
+      </geometry>
+    </collision>
+  </link>
+  <joint name="horizontal_joint" type="prismatic">
+    <parent link="base_link" />
+    <child link="carriage" />
+    <origin xyz="0 -0.16 0.85" />
+    <axis xyz="1 0 0" />
+    <limit lower="0" upper="1.28" effort="100" velocity="3.0" />
+    <dynamics damping="1" friction="0.1" />
+  </joint>
+  <!-- The lateral bracket must stay behind the pad face, or it contacts first. -->
+  <link name="vertical_slide">
+    <inertial>
+      <origin xyz="0 0 0.425" />
+      <mass value="0.6" />
+      <inertia ixx="0.036186249999999996" iyy="0.036186249999999996" izz="0.00012250000000000002" ixy="0" ixz="0" iyz="0" />
+    </inertial>
+    <visual>
+      <origin xyz="0 0 0.425" />
+      <geometry>
+        <box size="0.035 0.035 0.85" />
+      </geometry>
+      <material name="gray" />
+    </visual>
+    <collision>
+      <origin xyz="0 0 0.425" />
+      <geometry>
+        <box size="0.035 0.035 0.85" />
+      </geometry>
+    </collision>
+    <visual>
+      <origin xyz="0.06 0 0" />
+      <geometry>
+        <box size="0.15 0.035 0.035" />
+      </geometry>
+      <material name="orange" />
+    </visual>
+    <collision>
+      <origin xyz="0.06 0 0" />
+      <geometry>
+        <box size="0.15 0.035 0.035" />
+      </geometry>
+    </collision>
+    <visual>
+      <origin xyz="0.12 0.08 0" />
+      <geometry>
+        <box size="0.020 0.16 0.035" />
+      </geometry>
+      <material name="orange" />
+    </visual>
+    <collision>
+      <origin xyz="0.12 0.08 0" />
+      <geometry>
+        <box size="0.020 0.16 0.035" />
+      </geometry>
+    </collision>
+  </link>
+  <joint name="vertical_joint" type="prismatic">
+    <parent link="carriage" />
+    <child link="vertical_slide" />
+    <origin xyz="0 0 -0.20" />
+    <axis xyz="0 0 1" />
+    <limit lower="-0.63" upper="0" effort="100" velocity="0.5" />
+    <dynamics damping="1" friction="0.1" />
+  </joint>
+  <link name="pad">
+    <inertial>
+      <origin xyz="0 0 0" />
+      <mass value="0.2" />
+      <inertia ixx="0.00019333333333333336" iyy="4.1666666666666665e-05" izz="0.0001816666666666667" ixy="0" ixz="0" iyz="0" />
+    </inertial>
+    <visual>
+      <origin xyz="0 0 0" />
+      <geometry>
+        <box size="0.03 0.10 0.04" />
+      </geometry>
+      <material name="orange" />
+    </visual>
+    <collision>
+      <origin xyz="0 0 0" />
+      <geometry>
+        <box size="0.03 0.10 0.04" />
+      </geometry>
+    </collision>
+  </link>
+  <joint name="pad_joint" type="fixed">
+    <parent link="vertical_slide" />
+    <child link="pad" />
+    <origin xyz="0.12 0.16 0" />
+  </joint>
+</robot>

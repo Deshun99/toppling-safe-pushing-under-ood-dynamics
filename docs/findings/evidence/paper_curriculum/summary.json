@@ -1,0 +1,974 @@
+{
+  "settings": {
+    "seed": 42,
+    "world_model": "physics",
+    "target_distances_m": [
+      0.1,
+      0.15,
+      0.2
+    ],
+    "decisions_per_stage": 500,
+    "batch_size": 8,
+    "hidden_dim": 256,
+    "trajectory_feature_strategy": "self-attention",
+    "trajectory_points": 16,
+    "physics_hypotheses": 32,
+    "mcmc_steps": 2,
+    "learning_starts": 0,
+    "train_frequency": 8,
+    "force_max_n": 15.0,
+    "decision_horizon": 40,
+    "goal_tolerance_m": 0.08,
+    "information_gain_beta": 50.0,
+    "forecast_workers": 4,
+    "initial_checkpoint": "artifacts/paper_curriculum_check/delta_latest.pt",
+    "fresh_replay_and_optimizers": true,
+    "starting_actor_and_critic_equal_untrained_baseline": true
+  },
+  "training": {
+    "directory": "artifacts/paper_curriculum_fixed",
+    "target_decisions": 1500,
+    "starting_step_counter": 201,
+    "final_step_counter": 1701,
+    "starting_optimizer_updates": 0,
+    "new_gradient_updates": 187,
+    "all_update_metrics_finite": true,
+    "episodes": 107,
+    "wall_seconds": 1671.7019062042236,
+    "aggregate": {
+      "episodes": 107,
+      "pushes": 1500,
+      "success_count": 48,
+      "success_rate": 0.4485981308411215,
+      "topple_count": 46,
+      "timeout_count": 1,
+      "stopped_count": 3,
+      "stop_reason_counts": {
+        "interaction_budget": 3
+      },
+      "execution_status_counts": {
+        "completed": 60,
+        "block_toppled": 38,
+        "travel_limit": 9
+      },
+      "execution_failure_status_counts": {
+        "block_toppled": 38,
+        "travel_limit": 9
+      },
+      "task_reward": {
+        "count": 107,
+        "mean": 31.600413073020423,
+        "median": 16.941476774182128,
+        "min": -110.41260461271723,
+        "max": 139.41702622605678
+      },
+      "final_x_m": {
+        "count": 107,
+        "mean": 0.29179583902797984,
+        "median": 0.18105539195239545,
+        "min": 0.010384140908718115,
+        "max": 1.3868581771850585
+      },
+      "final_absolute_distance_m": {
+        "count": 107,
+        "mean": 0.20409319171537568,
+        "median": 0.0776343122124672,
+        "min": 9.405698074260727e-05,
+        "max": 1.2755385637283325
+      },
+      "information_gain": {
+        "count": 107,
+        "mean": 0.030560440870528435,
+        "median": 4.354019594496329e-05,
+        "min": 0.0,
+        "max": 0.32679782994014916
+      },
+      "gradient_steps": 187,
+      "training_examples": 1393
+    },
+    "stages": [
+      {
+        "stage": 0,
+        "target_distance_m": 0.1,
+        "first_push": 1,
+        "last_push": 500,
+        "aggregate": {
+          "episodes": 40,
+          "pushes": 500,
+          "success_count": 25,
+          "success_rate": 0.625,
+          "topple_count": 10,
+          "timeout_count": 1,
+          "stopped_count": 1,
+          "stop_reason_counts": {
+            "interaction_budget": 1
+          },
+          "execution_status_counts": {
+            "completed": 27,
+            "block_toppled": 10,
+            "travel_limit": 3
+          },
+          "execution_failure_status_counts": {
+            "block_toppled": 10,
+            "travel_limit": 3
+          },
+          "task_reward": {
+            "count": 40,
+            "mean": 43.474739115322734,
+            "median": 88.82494117786308,
+            "min": -110.41260461271723,
+            "max": 121.64252608798736
+          },
+          "final_x_m": {
+            "count": 40,
+            "mean": 0.20928716419730337,
+            "median": 0.049367754161357885,
+            "min": 0.010384140908718115,
+            "max": 1.3755385637283326
+          },
+          "final_absolute_distance_m": {
+            "count": 40,
+            "mean": 0.1912947600474581,
+            "median": 0.07781200855970383,
+            "min": 0.007423823699355125,
+            "max": 1.2755385637283325
+          },
+          "information_gain": {
+            "count": 40,
+            "mean": 0.027607530736839293,
+            "median": 1.1390030996154881e-24,
+            "min": 0.0,
+            "max": 0.322670437998564
+          },
+          "gradient_steps": 62,
+          "training_examples": 460
+        },
+        "first_quarter": {
+          "episodes": 10,
+          "pushes": 88,
+          "success_count": 5,
+          "success_rate": 0.5,
+          "topple_count": 5,
+          "timeout_count": 0,
+          "stopped_count": 0,
+          "stop_reason_counts": {},
+          "execution_status_counts": {
+            "completed": 5,
+            "block_toppled": 5
+          },
+          "execution_failure_status_counts": {
+            "block_toppled": 5
+          },
+          "task_reward": {
+            "count": 10,
+            "mean": 38.96118391972911,
+            "median": 46.72678012698654,
+            "min": -88.86909549611399,
+            "max": 117.8710093223807
+          },
+          "final_x_m": {
+            "count": 10,
+            "mean": 0.2281723259948194,
+            "median": 0.1033585629425943,
+            "min": 0.020818440616130834,
+            "max": 1.3755385637283326
+          },
+          "final_absolute_distance_m": {
+            "count": 10,
+            "mean": 0.18218051353469492,
+            "median": 0.07556699588894844,
+            "min": 0.008084339089691639,
+            "max": 1.2755385637283325
+          },
+          "information_gain": {
+            "count": 10,
+            "mean": 0.024293586538423975,
+            "median": 3.0392869340783085e-27,
+            "min": 0.0,
+            "max": 0.17996099692428252
+          },
+          "gradient_steps": 11,
+          "training_examples": 78
+        },
+        "last_quarter": {
+          "episodes": 10,
+          "pushes": 135,
+          "success_count": 9,
+          "success_rate": 0.9,
+          "topple_count": 0,
+          "timeout_count": 0,
+          "stopped_count": 1,
+          "stop_reason_counts": {
+            "interaction_budget": 1
+          },
+          "execution_status_counts": {
+            "completed": 10
+          },
+          "execution_failure_status_counts": {},
+          "task_reward": {
+            "count": 10,
+            "mean": 80.51721262956806,
+            "median": 89.87678079171003,
+            "min": -10.042028630196953,
+            "max": 99.68477027104434
+          },
+          "final_x_m": {
+            "count": 10,
+            "mean": 0.02066396996378899,
+            "median": 0.0207577332854271,
+            "min": 0.010384140908718115,
+            "max": 0.026358684897422796
+          },
+          "final_absolute_distance_m": {
+            "count": 10,
+            "mean": 0.07933603003621101,
+            "median": 0.0792422667145729,
+            "min": 0.07364131510257721,
+            "max": 0.08961585909128189
+          },
+          "information_gain": {
+            "count": 10,
+            "mean": 0.0310656141029754,
+            "median": 0.006628562485276268,
+            "min": 0.0001477547241227825,
+            "max": 0.2169773714273871
+          },
+          "gradient_steps": 17,
+          "training_examples": 125
+        },
+        "updates": {
+          "count": 62,
+          "all_numeric_metrics_finite": true,
+          "total_update_seconds": 137.44905028699986,
+          "metrics": {
+            "actor_gradient_norm": {
+              "count": 62,
+              "mean": 4.5910712019089726,
+              "median": 4.320690631866455,
+              "min": 2.4947359561920166,
+              "max": 14.015315055847168
+            },
+            "actor_loss": {
+              "count": 62,
+              "mean": 3.39923390073161,
+              "median": 3.3069041967391968,
+              "min": 1.6855984926223755,
+              "max": 5.28153133392334
+            },
+            "actor_saturation": {
+              "count": 62,
+              "mean": 0.004032258184686784,
+              "median": 0.0,
+              "min": 0.0,
+              "max": 0.0416666679084301
+            },
+            "alpha": {
+              "count": 62,
+              "mean": 0.9906117916107178,
+              "median": 0.9906082153320312,
+              "min": 0.9815502762794495,
+              "max": 0.9997000694274902
+            },
+            "critic_gradient_norm": {
+              "count": 62,
+              "mean": 112.3742421211735,
+              "median": 60.94834518432617,
+              "min": 9.000834465026855,
+              "max": 722.6884765625
+            },
+            "critic_loss": {
+              "count": 62,
+              "mean": 522.3048433046187,
+              "median": 128.60198211669922,
+              "min": 1.2903586626052856,
+              "max": 2490.272705078125
+            },
+            "critic_q_mean": {
+              "count": 62,
+              "mean": -1.570876839660829,
+              "median": -1.564884603023529,
+              "min": -3.3853061199188232,
+              "max": 0.013567663729190826
+            },
+            "target_mean": {
+              "count": 62,
+              "mean": 0.6232232206290768,
+              "median": -2.0326415300369263,
+              "min": -10.586233139038086,
+              "max": 22.6933536529541
+            },
+            "update_seconds": {
+              "count": 62,
+              "mean": 2.2169201659193525,
+              "median": 2.248478119499964,
+              "min": 0.7055630160000419,
+              "max": 3.4111489320002875
+            }
+          }
+        }
+      },
+      {
+        "stage": 1,
+        "target_distance_m": 0.15,
+        "first_push": 501,
+        "last_push": 1000,
+        "aggregate": {
+          "episodes": 29,
+          "pushes": 500,
+          "success_count": 11,
+          "success_rate": 0.3793103448275862,
+          "topple_count": 12,
+          "timeout_count": 0,
+          "stopped_count": 1,
+          "stop_reason_counts": {
+            "interaction_budget": 1
+          },
+          "execution_status_counts": {
+            "completed": 14,
+            "block_toppled": 10,
+            "travel_limit": 5
+          },
+          "execution_failure_status_counts": {
+            "block_toppled": 10,
+            "travel_limit": 5
+          },
+          "task_reward": {
+            "count": 29,
+            "mean": 13.072766162064788,
+            "median": -18.733786611924238,
+            "min": -108.61862232853454,
+            "max": 128.3842810957004
+          },
+          "final_x_m": {
+            "count": 29,
+            "mean": 0.40111261560934885,
+            "median": 0.24466680884361267,
+            "min": 0.03147233426570892,
+            "max": 1.3814894199371337
+          },
+          "final_absolute_distance_m": {
+            "count": 29,
+            "mean": 0.29698302749351696,
+            "median": 0.11587560921907425,
+            "min": 0.005294365342706442,
+            "max": 1.2314894199371338
+          },
+          "information_gain": {
+            "count": 29,
+            "mean": 0.033384089442514,
+            "median": 0.0008434607268753723,
+            "min": 8.120684137130175e-29,
+            "max": 0.28472893733866367
+          },
+          "gradient_steps": 63,
+          "training_examples": 471
+        },
+        "first_quarter": {
+          "episodes": 8,
+          "pushes": 140,
+          "success_count": 4,
+          "success_rate": 0.5,
+          "topple_count": 4,
+          "timeout_count": 0,
+          "stopped_count": 0,
+          "stop_reason_counts": {},
+          "execution_status_counts": {
+            "completed": 4,
+            "block_toppled": 4
+          },
+          "execution_failure_status_counts": {
+            "block_toppled": 4
+          },
+          "task_reward": {
+            "count": 8,
+            "mean": 28.6177097587238,
+            "median": 35.10450087053568,
+            "min": -56.49989167174163,
+            "max": 105.8541879155182
+          },
+          "final_x_m": {
+            "count": 8,
+            "mean": 0.2968440778553486,
+            "median": 0.2027618266642094,
+            "min": 0.07093382775783538,
+            "max": 0.7425357937812805
+          },
+          "final_absolute_distance_m": {
+            "count": 8,
+            "mean": 0.22034196555614471,
+            "median": 0.1253131628036499,
+            "min": 0.06603650003671646,
+            "max": 0.5925357937812805
+          },
+          "information_gain": {
+            "count": 8,
+            "mean": 0.03729166812031496,
+            "median": 0.0009177535669922248,
+            "min": 0.0003398056069160893,
+            "max": 0.2702087414388617
+          },
+          "gradient_steps": 18,
+          "training_examples": 132
+        },
+        "last_quarter": {
+          "episodes": 8,
+          "pushes": 153,
+          "success_count": 3,
+          "success_rate": 0.375,
+          "topple_count": 0,
+          "timeout_count": 0,
+          "stopped_count": 1,
+          "stop_reason_counts": {
+            "interaction_budget": 1
+          },
+          "execution_status_counts": {
+            "completed": 4,
+            "travel_limit": 4
+          },
+          "execution_failure_status_counts": {
+            "travel_limit": 4
+          },
+          "task_reward": {
+            "count": 8,
+            "mean": -2.299809544264696,
+            "median": -33.05618693775342,
+            "min": -108.61862232853454,
+            "max": 128.3842810957004
+          },
+          "final_x_m": {
+            "count": 8,
+            "mean": 0.6486253005336038,
+            "median": 0.6640125192701816,
+            "min": 0.03147233426570892,
+            "max": 1.3814894199371337
+          },
+          "final_absolute_distance_m": {
+            "count": 8,
+            "mean": 0.548212771944236,
+            "median": 0.5387112870812416,
+            "min": 0.005294365342706442,
+            "max": 1.2314894199371338
+          },
+          "information_gain": {
+            "count": 8,
+            "mean": 0.018159711332292973,
+            "median": 0.01130474646096851,
+            "min": 2.9235880106237023e-06,
+            "max": 0.05556254286158902
+          },
+          "gradient_steps": 20,
+          "training_examples": 145
+        },
+        "updates": {
+          "count": 63,
+          "all_numeric_metrics_finite": true,
+          "total_update_seconds": 167.45054870899912,
+          "metrics": {
+            "actor_gradient_norm": {
+              "count": 63,
+              "mean": 4.6421315291571235,
+              "median": 4.2915849685668945,
+              "min": 2.52789044380188,
+              "max": 10.744912147521973
+            },
+            "actor_loss": {
+              "count": 63,
+              "mean": 4.303651066053481,
+              "median": 4.196639060974121,
+              "min": 1.9671434164047241,
+              "max": 6.510713577270508
+            },
+            "actor_saturation": {
+              "count": 63,
+              "mean": 0.0013227513621723841,
+              "median": 0.0,
+              "min": 0.0,
+              "max": 0.0416666679084301
+            },
+            "alpha": {
+              "count": 63,
+              "mean": 0.9722180811185686,
+              "median": 0.9721972942352295,
+              "min": 0.963245153427124,
+              "max": 0.981256902217865
+            },
+            "critic_gradient_norm": {
+              "count": 63,
+              "mean": 232.3642587964497,
+              "median": 97.77263641357422,
+              "min": 8.4910306930542,
+              "max": 4061.5322265625
+            },
+            "critic_loss": {
+              "count": 63,
+              "mean": 370.54744764074445,
+              "median": 25.473554611206055,
+              "min": 0.6626512408256531,
+              "max": 2921.818115234375
+            },
+            "critic_q_mean": {
+              "count": 63,
+              "mean": -2.320043716520544,
+              "median": -2.2203946113586426,
+              "min": -4.50596809387207,
+              "max": 0.003949247300624847
+            },
+            "target_mean": {
+              "count": 63,
+              "mean": -0.9829668431054979,
+              "median": -3.0183708667755127,
+              "min": -13.630645751953125,
+              "max": 21.411540985107422
+            },
+            "update_seconds": {
+              "count": 63,
+              "mean": 2.6579452176031606,
+              "median": 2.626809088999835,
+              "min": 1.5118186340000648,
+              "max": 3.6886435050000728
+            }
+          }
+        }
+      },
+      {
+        "stage": 2,
+        "target_distance_m": 0.2,
+        "first_push": 1001,
+        "last_push": 1500,
+        "aggregate": {
+          "episodes": 38,
+          "pushes": 500,
+          "success_count": 12,
+          "success_rate": 0.3157894736842105,
+          "topple_count": 24,
+          "timeout_count": 0,
+          "stopped_count": 1,
+          "stop_reason_counts": {
+            "interaction_budget": 1
+          },
+          "execution_status_counts": {
+            "block_toppled": 18,
+            "completed": 19,
+            "travel_limit": 1
+          },
+          "execution_failure_status_counts": {
+            "block_toppled": 18,
+            "travel_limit": 1
+          },
+          "task_reward": {
+            "count": 38,
+            "mean": 33.24064251316835,
+            "median": 14.14165966715679,
+            "min": -68.61196843393704,
+            "max": 139.41702622605678
+          },
+          "final_x_m": {
+            "count": 38,
+            "mean": 0.29522111461659445,
+            "median": 0.2056099370121956,
+            "min": 0.012362715601921093,
+            "max": 1.3868581771850585
+          },
+          "final_absolute_distance_m": {
+            "count": 38,
+            "mean": 0.1466756135351285,
+            "median": 0.06301453337073326,
+            "min": 9.405698074260727e-05,
+            "max": 1.1868581771850586
+          },
+          "information_gain": {
+            "count": 38,
+            "mean": 0.03151387762737012,
+            "median": 9.062581272293725e-06,
+            "min": 1.994208975740634e-29,
+            "max": 0.32679782994014916
+          },
+          "gradient_steps": 62,
+          "training_examples": 462
+        },
+        "first_quarter": {
+          "episodes": 10,
+          "pushes": 141,
+          "success_count": 2,
+          "success_rate": 0.2,
+          "topple_count": 8,
+          "timeout_count": 0,
+          "stopped_count": 0,
+          "stop_reason_counts": {},
+          "execution_status_counts": {
+            "block_toppled": 8,
+            "completed": 2
+          },
+          "execution_failure_status_counts": {
+            "block_toppled": 8
+          },
+          "task_reward": {
+            "count": 10,
+            "mean": 21.535728553064985,
+            "median": 14.14165966715679,
+            "min": -41.60175041807958,
+            "max": 127.65628127296273
+          },
+          "final_x_m": {
+            "count": 10,
+            "mean": 0.28220430947840214,
+            "median": 0.2277660433202982,
+            "min": 0.14950223341584207,
+            "max": 0.5154219090938568
+          },
+          "final_absolute_distance_m": {
+            "count": 10,
+            "mean": 0.10554472170770168,
+            "median": 0.049586545675992966,
+            "min": 0.017528969794511795,
+            "max": 0.3154219090938568
+          },
+          "information_gain": {
+            "count": 10,
+            "mean": 0.025751603103721675,
+            "median": 0.001376313309594852,
+            "min": 2.793243379910909e-07,
+            "max": 0.22350979597912257
+          },
+          "gradient_steps": 17,
+          "training_examples": 131
+        },
+        "last_quarter": {
+          "episodes": 10,
+          "pushes": 99,
+          "success_count": 1,
+          "success_rate": 0.1,
+          "topple_count": 8,
+          "timeout_count": 0,
+          "stopped_count": 1,
+          "stop_reason_counts": {
+            "interaction_budget": 1
+          },
+          "execution_status_counts": {
+            "completed": 7,
+            "block_toppled": 3
+          },
+          "execution_failure_status_counts": {
+            "block_toppled": 3
+          },
+          "task_reward": {
+            "count": 10,
+            "mean": 6.959755364902978,
+            "median": 13.532743696551899,
+            "min": -68.61196843393704,
+            "max": 116.09772142198807
+          },
+          "final_x_m": {
+            "count": 10,
+            "mean": 0.32050979919731615,
+            "median": 0.18499283473938705,
+            "min": 0.012362715601921093,
+            "max": 1.3868581771850585
+          },
+          "final_absolute_distance_m": {
+            "count": 10,
+            "mean": 0.19348864145576955,
+            "median": 0.06396655738353729,
+            "min": 0.008752863854169846,
+            "max": 1.1868581771850586
+          },
+          "information_gain": {
+            "count": 10,
+            "mean": 0.029948536753463338,
+            "median": 2.3147580031798173e-05,
+            "min": 2.330981756196395e-27,
+            "max": 0.27876873955464293
+          },
+          "gradient_steps": 12,
+          "training_examples": 89
+        },
+        "updates": {
+          "count": 62,
+          "all_numeric_metrics_finite": true,
+          "total_update_seconds": 142.53243059499846,
+          "metrics": {
+            "actor_gradient_norm": {
+              "count": 62,
+              "mean": 4.298272263619207,
+              "median": 3.583683729171753,
+              "min": 2.13765287399292,
+              "max": 12.164328575134277
+            },
+            "actor_loss": {
+              "count": 62,
+              "mean": 4.16285918604943,
+              "median": 4.031754493713379,
+              "min": 1.8396658897399902,
+              "max": 7.747000694274902
+            },
+            "actor_saturation": {
+              "count": 62,
+              "mean": 0.005376344246249045,
+              "median": 0.0,
+              "min": 0.0,
+              "max": 0.0833333358168602
+            },
+            "alpha": {
+              "count": 62,
+              "mean": 0.9541947524393758,
+              "median": 0.9541674554347992,
+              "min": 0.9454824924468994,
+              "max": 0.9629566073417664
+            },
+            "critic_gradient_norm": {
+              "count": 62,
+              "mean": 270.9307047167132,
+              "median": 107.42683029174805,
+              "min": 2.705010414123535,
+              "max": 2482.3466796875
+            },
+            "critic_loss": {
+              "count": 62,
+              "mean": 465.29816949367523,
+              "median": 60.34333038330078,
+              "min": 1.5144673585891724,
+              "max": 1808.9415283203125
+            },
+            "critic_q_mean": {
+              "count": 62,
+              "mean": -2.3505097507469115,
+              "median": -2.143625259399414,
+              "min": -5.713726997375488,
+              "max": -0.21673986315727234
+            },
+            "target_mean": {
+              "count": 62,
+              "mean": 0.8627574962954367,
+              "median": -1.2370080351829529,
+              "min": -12.281079292297363,
+              "max": 14.225991249084473
+            },
+            "update_seconds": {
+              "count": 62,
+              "mean": 2.298910170887072,
+              "median": 2.326363623999896,
+              "min": 1.5477016610002465,
+              "max": 3.013207120000061
+            }
+          }
+        }
+      }
+    ],
+    "optimization": {
+      "count": 187,
+      "all_numeric_metrics_finite": true,
+      "total_update_seconds": 447.43202959099744,
+      "metrics": {
+        "actor_gradient_norm": {
+          "count": 187,
+          "mean": 4.511195621388481,
+          "median": 4.164778232574463,
+          "min": 2.13765287399292,
+          "max": 14.015315055847168
+        },
+        "actor_loss": {
+          "count": 187,
+          "mean": 3.9571111686726943,
+          "median": 3.8562464714050293,
+          "min": 1.6855984926223755,
+          "max": 7.747000694274902
+        },
+        "actor_saturation": {
+          "count": 187,
+          "mean": 0.003565062494838939,
+          "median": 0.0,
+          "min": 0.0,
+          "max": 0.0833333358168602
+        },
+        "alpha": {
+          "count": 187,
+          "mean": 0.972340881505752,
+          "median": 0.9721972942352295,
+          "min": 0.9454824924468994,
+          "max": 0.9997000694274902
+        },
+        "critic_gradient_norm": {
+          "count": 187,
+          "mean": 205.36820859960056,
+          "median": 84.71961212158203,
+          "min": 2.705010414123535,
+          "max": 4061.5322265625
+        },
+        "critic_loss": {
+          "count": 187,
+          "mean": 452.2774117372253,
+          "median": 62.46266174316406,
+          "min": 0.6626512408256531,
+          "max": 2921.818115234375
+        },
+        "critic_q_mean": {
+          "count": 187,
+          "mean": -2.0817578756474555,
+          "median": -1.9880523681640625,
+          "min": -5.713726997375488,
+          "max": 0.013567663729190826
+        },
+        "target_mean": {
+          "count": 187,
+          "mean": 0.16151814616937687,
+          "median": -2.393949508666992,
+          "min": -13.630645751953125,
+          "max": 22.6933536529541
+        },
+        "update_seconds": {
+          "count": 187,
+          "mean": 2.3926846502192376,
+          "median": 2.389087120000113,
+          "min": 0.7055630160000419,
+          "max": 3.6886435050000728
+        }
+      }
+    }
+  },
+  "held_out": {
+    "split": "in_distribution",
+    "fixed_objects": 8,
+    "episodes_per_object": 3,
+    "seed": 42,
+    "neural_weights_frozen": true,
+    "physics_identification_persists_per_object": true,
+    "all_additional_gradient_updates_zero": true,
+    "comparisons": [
+      {
+        "stage": 0,
+        "target_distance_m": 0.1,
+        "cumulative_training_decisions": 500,
+        "baseline": {
+          "directory": "artifacts/paper_curriculum_baseline",
+          "episodes": 24,
+          "successes": 12,
+          "success_rate": 0.5,
+          "topples": 8,
+          "timeouts": 1,
+          "mechanical_failures": 3,
+          "status_counts": {
+            "completed": 14,
+            "block_toppled": 7,
+            "travel_limit": 2,
+            "contact_timeout": 1
+          },
+          "additional_gradient_updates": 0,
+          "mean_task_reward": 22.17513634593028,
+          "mean_final_absolute_distance_m": 0.1930160777992569
+        },
+        "trained": {
+          "directory": "artifacts/paper_curriculum_eval_stage0",
+          "episodes": 24,
+          "successes": 21,
+          "success_rate": 0.875,
+          "topples": 2,
+          "timeouts": 1,
+          "mechanical_failures": 0,
+          "status_counts": {
+            "completed": 22,
+            "block_toppled": 2
+          },
+          "additional_gradient_updates": 0,
+          "mean_task_reward": 74.19058340700964,
+          "mean_final_absolute_distance_m": 0.09075337741523981
+        }
+      },
+      {
+        "stage": 1,
+        "target_distance_m": 0.15,
+        "cumulative_training_decisions": 1000,
+        "baseline": {
+          "directory": "artifacts/paper_curriculum_eval_baseline_d0.15",
+          "episodes": 24,
+          "successes": 5,
+          "success_rate": 0.20833333333333334,
+          "topples": 14,
+          "timeouts": 4,
+          "mechanical_failures": 1,
+          "status_counts": {
+            "block_toppled": 11,
+            "completed": 12,
+            "contact_timeout": 1
+          },
+          "additional_gradient_updates": 0,
+          "mean_task_reward": -2.056089641760758,
+          "mean_final_absolute_distance_m": 0.13971929197820523
+        },
+        "trained": {
+          "directory": "artifacts/paper_curriculum_eval_stage1",
+          "episodes": 24,
+          "successes": 8,
+          "success_rate": 0.3333333333333333,
+          "topples": 9,
+          "timeouts": 3,
+          "mechanical_failures": 4,
+          "status_counts": {
+            "completed": 13,
+            "contact_timeout": 2,
+            "block_toppled": 7,
+            "travel_limit": 2
+          },
+          "additional_gradient_updates": 0,
+          "mean_task_reward": 11.36795938269505,
+          "mean_final_absolute_distance_m": 0.22171893735261014
+        }
+      },
+      {
+        "stage": 2,
+        "target_distance_m": 0.2,
+        "cumulative_training_decisions": 1500,
+        "baseline": {
+          "directory": "artifacts/paper_curriculum_eval_baseline_d0.20",
+          "episodes": 24,
+          "successes": 2,
+          "success_rate": 0.08333333333333333,
+          "topples": 12,
+          "timeouts": 7,
+          "mechanical_failures": 3,
+          "status_counts": {
+            "block_toppled": 9,
+            "contact_timeout": 1,
+            "travel_limit": 2,
+            "completed": 12
+          },
+          "additional_gradient_updates": 0,
+          "mean_task_reward": -20.500486398440366,
+          "mean_final_absolute_distance_m": 0.26194586591251817
+        },
+        "trained": {
+          "directory": "artifacts/paper_curriculum_eval_stage2",
+          "episodes": 24,
+          "successes": 5,
+          "success_rate": 0.20833333333333334,
+          "topples": 10,
+          "timeouts": 2,
+          "mechanical_failures": 7,
+          "status_counts": {
+            "contact_timeout": 4,
+            "travel_limit": 3,
+            "block_toppled": 7,
+            "completed": 10
+          },
+          "additional_gradient_updates": 0,
+          "mean_task_reward": -2.327549803983297,
+          "mean_final_absolute_distance_m": 0.3701250332718094
+        }
+      }
+    ]
+  },
+  "fixes": [
+    "Terminal execution failures now produce terminal learning examples without fabricated trajectories or SysID observations.",
+    "Curriculum budgets now cap collection at the exact target-decision count, including probes and failed attempts."
+  ],
+  "excluded_diagnostic_training_runs": [
+    "artifacts/paper_curriculum_check",
+    "artifacts/paper_curriculum_small_batch"
+  ],
+  "limitations": [
+    "Single training seed and only three short-goal stages with 500 decisions each.",
+    "The paper preset uses 10000 decisions per stage and batch64; this validation uses 500 and batch size 8.",
+    "Evaluation contains only eight in-distribution objects and three episodes per object; no OOD or 1 m benchmark.",
+    "Later goals retain overshoot, toppling and mechanical execution failures.",
+    "Quarter comparisons describe changing training objects and do not isolate learning."
+  ]
+}

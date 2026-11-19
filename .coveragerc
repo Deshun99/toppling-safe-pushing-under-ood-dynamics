@@ -1,0 +1,12 @@
+[run]
+# Measure implementation packages; omit runnable workflows and learning exercises.
+omit =
+    src/simulation/tools/demos/*
+    src/simulation/tools/validation/*
+    src/self_learning/*
+    src/evaluation/system_identification/demos/*
+    src/evaluation/system_identification/comparisons/*
+    src/evaluation/system_identification/diagnostics/*
+    src/agents/rl/training/*
+    src/evaluation/rl/evaluate.py
+    src/evaluation/rl/demos/visualize_trained_sac.py

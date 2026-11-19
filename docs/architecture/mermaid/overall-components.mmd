@@ -1,0 +1,46 @@
+---
+title: Implemented project architecture
+---
+flowchart TB
+    subgraph RL["RL training and evaluation"]
+        CFG["Training distribution config"]
+        SAM["ObjectSampler"]
+        TR["Training runner<br/>Gymnasium vector workers"]
+        SAC["SAC<br/>Actor, twin critics, normalization"]
+        BUF["Target-transition replay buffer"]
+        CK["Checkpoint<br/>Weights, statistics, training metadata"]
+        BM["Held-out / OOD evaluation set config"]
+        EV["Evaluator<br/>Frozen policy or per-object fine-tuning"]
+        REP["Episode metrics and reports"]
+        CFG -->|"Defines ranges and exclusions"| SAM
+        SAM -->|"Supplies object distribution"| TR
+        TR -->|"Requests actions and network updates"| SAC
+        TR -->|"Stores collected transitions"| BUF
+        BUF -->|"Supplies training batches"| SAC
+        SAC -->|"Saves model state and training settings"| CK
+        CK -->|"Loads fresh policy per object"| EV
+        BM -->|"Supplies fixed or sampled test objects"| EV
+        EV -->|"Requests actions; optionally updates SAC"| SAC
+        EV -->|"Produces episode records"| REP
+    end
+    subgraph ID["System-identification studies"]
+        STUDY["Scripted studies and benchmarks"]
+        FIT["SysID: CMA-ES<br/>SMC2SysID: sequential inference"]
+        SIM["InternalSim<br/>Separate headless PyBullet client"]
+        STUDY -->|"Provides ActionRecord history"| FIT
+        FIT -->|"Requests replay under candidate physics"| SIM
+        SIM -->|"Returns predicted dense trajectories"| FIT
+        FIT -->|"Returns parameter estimates and hypotheses"| STUDY
+    end
+    subgraph PHY["Shared simulation foundation"]
+        ENV["PushEnv<br/>Target PyBullet client"]
+        EXEC["ForcePushExecutor implementation<br/>Separate instances per physics client"]
+        OBJ["Cuboid / CuboidSpec implementation<br/>Separate objects per physics client"]
+        ENV -->|"Executes physical PushAction"| EXEC
+        EXEC -->|"Applies force and records motion"| OBJ
+    end
+    TR -->|"Collects Gymnasium transitions"| ENV
+    EV -->|"Runs episodes on selected objects"| ENV
+    STUDY -->|"Executes scripted physical pushes"| ENV
+    ENV -->|"Returns ActionRecord"| STUDY
+    SIM -->|"Reuses direct-force execution"| EXEC

@@ -1,0 +1,310 @@
+\documentclass[11pt]{article}
+\usepackage[a4paper,margin=25mm]{geometry}
+\usepackage{amsmath,amssymb,booktabs,hyperref}
+\usepackage[T1]{fontenc}
+\usepackage{lmodern}
+\setlength{\emergencystretch}{3em}
+\title{SMC$^2$ for Simulation-Assisted Toppling-Safe Pushing}
+\author{Project implementation note}
+\date{}
+\begin{document}
+\maketitle
+
+\section{Purpose and scope}
+Our agent pushes an upright cuboid toward a goal while avoiding toppling.
+Geometry $G=(w,L,H)$ is observed, while physical parameters
+$\theta=(m,\mu,h_c)$ (mass, floor friction, and vertical centre of mass)
+are unknown. The existing CMA-ES estimator searches for low trajectory
+error and returns a few good candidates. SMC$^2$ instead maintains a
+weighted approximation to a Bayesian parameter posterior: alternative
+physics hypotheses and their probability mass. These hypotheses configure
+the internal direct-force PyBullet simulator used for action replay;
+integration with imagination and the pessimistic action shield is planned. They are never appended to the SAC
+policy observation.
+
+The implementation in \texttt{src/agents/system\_identification/smc2.py} is SMC$^2$ specialized to
+\emph{conditional action replay}. Each push is one observation block;
+its measured start state is conditioned upon, with explicit uncertainty.
+It is not a continuous latent-state tracker across pushes, and does not
+model unobserved three-dimensional contact states. This matches the
+existing \texttt{ActionRecord} and \texttt{InternalSim.replay}
+interfaces.
+CMA-ES remains available as a separate baseline.
+
+\section{General \texorpdfstring{SMC$^2$}{SMC2} mathematics}
+For a state-space model with static parameter $\theta$, latent state $x_t$,
+observation $y_t$, and known action $a_t$, write
+\begin{align}
+ \theta &\sim p(\theta), & x_0&\sim p_\theta(x_0),\\
+ x_t&\sim f_\theta(x_t\mid x_{t-1},a_t), &
+ y_t&\sim g_\theta(y_t\mid x_t).
+\end{align}
+The target is
+\begin{equation}
+ p(\theta,x_{0:t}\mid y_{1:t},a_{1:t})\propto
+ p(\theta)p_\theta(x_0)\prod_{r=1}^t
+ f_\theta(x_r\mid x_{r-1},a_r)g_\theta(y_r\mid x_r).
+\end{equation}
+An outer population $\{\theta^{(j)},W_t^{(j)}\}_{j=1}^{N_\theta}$
+approximates the parameter posterior. Each parameter particle owns an
+inner particle filter with $N_x$ state particles and an estimated
+marginal likelihood. For a bootstrap filter with resampling before
+propagation, the inner step is
+\begin{align}
+ A_t^{(j,i)}&\sim\operatorname{Categorical}(w_{t-1}^{(j,1:N_x)}),\\
+ x_t^{(j,i)}&\sim f_{\theta^{(j)}}(\cdot\mid
+ x_{t-1}^{(j,A_t^{(j,i)})},a_t),\\
+ v_t^{(j,i)}&=g_{\theta^{(j)}}(y_t\mid x_t^{(j,i)}),\qquad
+ w_t^{(j,i)}=\frac{v_t^{(j,i)}}{\sum_k v_t^{(j,k)}},\\
+ \widehat\ell_t^{(j)}&=\frac{1}{N_x}\sum_i v_t^{(j,i)},\qquad
+ \widehat L_t^{(j)}=\prod_{r=1}^t\widehat\ell_r^{(j)}.
+\end{align}
+$A_t^{(j,i)}$ is an ancestor index, not the commanded push $a_t$.
+The likelihood estimate is nonnegative and unbiased under the particle
+filter construction; its logarithm is generally biased.
+The outer update is
+\begin{equation}
+ W_t^{(j)}=\frac{W_{t-1}^{(j)}\widehat\ell_t^{(j)}}
+ {\sum_k W_{t-1}^{(k)}\widehat\ell_t^{(k)}},\qquad
+ \operatorname{ESS}_t=\frac{1}{\sum_j(W_t^{(j)})^2}.
+\end{equation}
+All computations use log likelihoods and log-sum-exp to avoid underflow.
+
+When ESS falls below $\rho N_\theta$, resample outer particles along with
+their inner filter states and likelihood estimates, reset weights to
+$1/N_\theta$, and rejuvenate by particle marginal Metropolis--Hastings
+(PMMH). Propose $\theta'\sim q(\cdot\mid\theta)$, run a \emph{fresh}
+inner filter over all observations to obtain $\widehat L_t'$, and accept
+with probability
+\begin{equation}
+ \alpha=\min\left(1,
+ \frac{p(\theta')\widehat L_t' q(\theta\mid\theta')}
+ {p(\theta)\widehat L_t q(\theta'\mid\theta)}\right).
+\end{equation}
+Upon rejection, retain the old parameters, inner particles, and old
+random likelihood estimate. Re-estimating the denominator on rejection
+would break the pseudo-marginal construction. The extended-space target
+has the desired parameter posterior as its marginal; finite particle
+populations and finite MCMC budgets still incur Monte Carlo error.
+
+\section{The project's conditional replay model}
+\subsection{Parameters and prior}
+We work in transformed coordinates
+\begin{equation}
+ z=(\log m,\mu,r),\qquad r=h_c/H,\qquad
+ z\sim\mathcal U([z_{\min},z_{\max}]),
+\end{equation}
+with bounds
+\begin{equation}
+ z_{\min}=(\log 0.2,0.10,0.20),\qquad
+ z_{\max}=(\log 3.0,1.10,0.80).
+\end{equation}
+Thus the induced mass prior is log-uniform ($p(m)\propto1/m$); friction
+and relative COM have uniform priors. These wider-than-training bounds
+match the existing SysID search box and permit out-of-distribution
+objects. This is a different prior from CMA-ES's initialization around
+its training mean. No Jacobian appears in PMMH because both the target
+and proposal are expressed in $z$.
+
+\subsection{States, actions, and observations}
+Record $t$ contains the measured pre-warm-up state
+$b_t=(x,\psi,\dot x,\dot\psi)$, the physical commanded action
+$a_t=(h,F,\tau)$, the warm-up step count, and a dense trajectory.
+For this model the uncertain latent state $s_t$ is the true replay start:
+\begin{equation}
+ s_t\mid b_t\sim\mathcal N(b_t,S),\qquad
+ S=\operatorname{diag}(\sigma_{s,1}^2,\ldots,\sigma_{s,4}^2).
+\end{equation}
+This conditional distribution is a modeling assumption, not a posterior
+derived from a complete sensor model. The transition is independent of
+the previous block: $f(s_t\mid s_{t-1},b_t)=\mathcal N(b_t,S)$.
+Consequently ancestor selection in the general bootstrap filter has no
+effect: each block draws fresh independent starts. This specialization
+is why the code needs no inner ancestor resampling between pushes.
+
+For each start particle, the deterministic simulator returns
+$\widehat y_{t,k}=F_{G,z}(s_t,a_t)_k$, including recorded warm-up steps.
+The simulator reconstructs height from planar pitch and floor contact,
+and zeros other unrecorded velocity components. The observation vector is
+$y_{t,k}=(x,\psi,\dot x,\dot\psi)$, in metres, radians, metres/second,
+and radians/second. It is the dense physical trajectory, not the
+seven-dimensional policy observation $(d,\psi,\dot x,\dot\psi,G)$.
+
+We use $\mathcal I_t=\{k\in\{0,d,2d,\ldots\}:w_t\leq k<n_t\}$,
+where $w_t$ is the recorded warm-up count and $n_t$ is the trajectory length
+(default stride $d=12$ at 240 Hz). Warm-up is replayed but excluded from
+scoring; its removal does not shift the sampling phase. For example,
+$w_t=8$ and $d=12$ selects $12,24,\ldots$. Empty scoring windows are rejected.
+The normalized likelihood is
+\begin{align}
+ g_z(y_t\mid s_t,a_t)&=\prod_{k\in\mathcal I_t}
+ \mathcal N(y_{t,k};F_{G,z}(s_t,a_t)_k,R),\\
+ \log g_z&=-\frac12\sum_{k\in\mathcal I_t}\sum_{c=1}^4
+ \left[\frac{(y_{t,k,c}-\widehat y_{t,k,c})^2}{\sigma_{y,c}^2}
+ +\log(2\pi\sigma_{y,c}^2)\right].
+\end{align}
+This answers how $p(y\mid x)$ is computed: replay the state hypothesis,
+compare predicted and measured quantities, then evaluate their specified
+noise density. The simulator alone does not supply an observation density.
+Pitch residuals are ordinary differences within the upright regime;
+this model is not intended for wrapped rotations after a full topple.
+
+Default start standard deviations are
+$(0.01,0.002,0.01,0.02)$ in the channel units above. Observation standard
+deviations default to the inverse square roots of \texttt{LOSS\_SCALES}:
+\begin{equation}
+ \sigma_{y,c}=1/\sqrt{\texttt{LOSS\_SCALES}[c]},\qquad
+ \sigma_y\approx(0.00356,0.000470,0.0204,0.0437).
+\end{equation}
+Both are configurable. Replay error is not automatically independent
+Gaussian sensor noise: these defaults are provisional. Subsampling
+reduces, but does not prove the absence of, temporal correlation.
+The implementation rejects empty, nonfinite, mismatched, or incorrectly
+timed trajectories rather than silently truncating them.
+
+\subsection{Likelihood estimator and parameter update}
+For each outer particle, draw $s_t^{(j,i)}\sim\mathcal N(b_t,S)$ and set
+\begin{equation}
+ \widehat\ell_t^{(j)}=\frac1{N_x}\sum_i
+ g_{z^{(j)}}(y_t\mid s_t^{(j,i)},a_t),\qquad
+ w_t^{(j,i)}\propto g_{z^{(j)}}(y_t\mid s_t^{(j,i)},a_t).
+\end{equation}
+This is unbiased for the conditional block likelihood integral. With
+independent random draws across blocks, the product is unbiased for
+\begin{equation}
+ L_T(z)=\prod_{t=1}^T\int g_z(y_t\mid s_t,a_t)
+ \mathcal N(s_t;b_t,S)\,ds_t.
+\end{equation}
+We target $p(z\mid y_{1:T},b_{1:T},a_{1:T})\propto p(z)L_T(z)$
+under this conditional model, not the full likelihood of the measured
+starts and all dense trajectories together. Correlation between the
+previous endpoint and the next measured start is not modeled.
+Zero start variance is allowed for deterministic replay experiments;
+then inner particles coincide and offer no additional uncertainty.
+
+Outer resampling is systematic. With \texttt{proposal="fixed"}, PMMH uses
+$z'=z+\epsilon$ with independent
+$\epsilon_c\sim\mathcal N(0,[\eta(z_{\max,c}-z_{\min,c})]^2)$,
+default $\eta=0.08$. Proposals outside the bounds are rejected without
+clipping. Inside the bounds the symmetric proposal and uniform prior
+cancel, so $\log\alpha=\min(0,\log\widehat L_T'-\log\widehat L_T)$.
+Each accepted proposal replaces the complete current filter state.
+
+The default \texttt{proposal="covariance"} instead uses the weighted
+particle covariance in prior-scaled coordinates, measured before resampling.
+Its shape is regularized and normalized to have trace three, keeping the same
+expected squared step length as the fixed proposal in those coordinates.
+A collapsed population falls back to the fixed shape. The transform is frozen
+throughout each move stage, so the Gaussian proposal remains symmetric.
+This population-based adaptation does not guarantee exact posterior samples
+from a finite population.
+
+Optional \texttt{temper\_updates=True} introduces each new push through
+likelihood powers from zero to one while keeping earlier evidence at full
+strength. Conditional ESS determines the increments. This mode requires
+\texttt{start\_std=(0,0,0,0)} and \texttt{n\_state=1}; it rejects uncertain
+starts and \texttt{ess\_fraction=1}. Each intermediate resampling stage uses
+the configured proposal and move count, so gradual updates can cost more
+replays. The default remains a full likelihood update.
+
+\section{Using the implementation}
+\begin{verbatim}
+from src.agents.system_identification.smc2 import SMC2SysID
+from src.simulation.modelling.actions import PushAction
+
+history = []  # persists across episodes for one object
+with SMC2SysID(geometry=(w, L, H), n_theta=64, n_state=8,
+              seed=7) as estimator:
+    record = target.push(PushAction(h=h, F=F, tau=tau), warmup_steps=8)
+    # Select upright records under a declared data-collection protocol.
+    history.append(record)
+    result = estimator.update(history)
+    z, weights = estimator.particles, estimator.weights
+\end{verbatim}
+The record uses physical actions, not normalized gym actions. Repeated
+\texttt{update(history)} calls process only appended records. Prefix
+edits or shortened histories raise an error; construct a new estimator
+for a new object or revised data. Empty history returns prior hypotheses.
+The estimator snapshots records so later caller edits cannot silently
+change the observations used in PMMH. Its context manager closes its
+owned PyBullet client. A supplied simulator remains caller-owned.
+
+\texttt{result.hypotheses} provides the existing \texttt{SysIDResult}
+interface: duplicate parameter particles have their weights combined,
+and the top $K$ unique particles have weights renormalized over that
+subset. \texttt{point} is the particle with greatest aggregated mass,
+not a continuous MAP or minimum-error estimate. After resampling,
+weights can tie, so this point is a coarse summary.
+\texttt{loss} is negative estimated log likelihood, possibly negative,
+and is not comparable to the CMA-ES squared-error loss.
+
+Use the full weighted population for uncertainty. First convert to physical
+parameters $\theta_j=(\exp z_{j,1},z_{j,2},Hz_{j,3})$. Then compute
+\begin{equation}
+ \bar\theta=\sum_j W_j\theta_j,\qquad
+ \operatorname{Cov}(\theta)=\sum_jW_j
+ (\theta_j-\bar\theta)(\theta_j-\bar\theta)^\top.
+\end{equation}
+Top-$K$ truncation can omit important low-probability dangerous dynamics;
+a shield using only that subset is not a posterior safety guarantee.
+The new estimator does not implement the future SAC/Dyna/shield stages.
+
+Run the small independent-episode example from the repository root:
+\begin{verbatim}
+.venv/bin/python -m \
+  src.evaluation.system_identification.demos.smc2_demo \
+  --n-theta 64 --n-state 8
+.venv/bin/python -m pytest tests/test_smc2.py
+mkdir -p artifacts/smc2-doc
+pdflatex -halt-on-error -interaction=nonstopmode \
+  -output-directory=artifacts/smc2-doc docs/smc2.tex
+\end{verbatim}
+The demo reports weighted ensemble means and standard deviations, ESS
+before resampling, and PMMH acceptance counts. True parameters are used
+only to configure the target and for evaluation output.
+
+\section{Limitations, cost, and validation}
+A new push costs $N_\theta N_x$ complete replays. A rejuvenation event
+with $M$ PMMH steps after $T$ records costs up to
+$M N_\theta N_x T$ replays. Defaults are $N_\theta=64$, $N_x=8$,
+$M=2$, and $\rho=0.5$. The code stores the most recent block's inner
+particles, cumulative likelihoods, and the recorded history; it does
+not store every simulated trajectory. Adaptive inner population sizes and
+parallel replay are not implemented. The cost above describes full updates;
+the optional known-start gradual updates can add resampling/move stages.
+
+Dense evidence can collapse a small outer population. Low inner
+likelihood precision can cause sticky PMMH chains. Examine ESS,
+acceptance, seed-to-seed stability, particle diversity, and posterior
+predictive coverage; increase both budgets as needed. More particles
+cannot fix an incorrect observation model. Calibrate noise and temporal
+subsampling on held-out replay trajectories before drawing scientific
+conclusions about credible intervals or safety.
+
+Sliding excitation often identifies mass and friction better than COM
+height. Near-tipping pushes can add COM information but replay is
+bistable; complete topples are outside this model's intended regime.
+Data collection and censoring rules must be reported: discarding outcomes
+based on observed tilt can itself affect inference, and this version
+does not include a selection/censoring likelihood. The arm-versus-direct-
+force discrepancy will also require a revised model once the KUKA
+executor is integrated.
+
+Tests compare sequential weights with exact Gaussian Bayes updates,
+check the inner evidence and state mean against an analytic Gaussian
+convolution, check rejuvenation against a known posterior, verify
+rejection retains the random likelihood, and exercise real PyBullet
+replay and resource cleanup. These establish algorithmic correctness
+for the tested cases, not empirical parameter recovery on all objects.
+
+\begin{thebibliography}{9}
+\bibitem{chopin} N. Chopin, P. E. Jacob, and O. Papaspiliopoulos.
+SMC$^2$: an efficient algorithm for sequential analysis of state space
+models. \emph{Journal of the Royal Statistical Society: Series B},
+75(3):397--426, 2013. \url{https://doi.org/10.1111/j.1467-9868.2012.01046.x}.
+\bibitem{andrieu} C. Andrieu, A. Doucet, and R. Holenstein.
+Particle Markov chain Monte Carlo methods.
+\emph{Journal of the Royal Statistical Society: Series B},
+72(3):269--342, 2010. \url{https://doi.org/10.1111/j.1467-9868.2009.00736.x}.
+\end{thebibliography}
+\end{document}

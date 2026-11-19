@@ -1,0 +1,30 @@
+# Core scientific stack
+numpy==1.26.4
+pandas==2.2.3
+matplotlib==3.8.4
+scipy==1.13.1
+
+# Jupyter environment
+jupyter==1.0.0
+notebook==7.4.1
+ipykernel==6.29.5
+
+# Reinforcement learning and simulation
+# macOS uses the patched source build in scripts/build_pybullet_macos.sh.
+pybullet==3.2.7; sys_platform != "darwin"
+gymnasium==0.29.1
+# Install the CPU or CUDA wheel first, following README.md.
+torch==2.3.1
+
+# System identification
+cma==4.5.0
+
+# Training utilities
+tqdm==4.66.1
+tensorboard==2.16.2
+rich==15.0.0
+
+# Automated tests and coverage
+pytest==8.3.5
+pytest-cov==6.0.0
+

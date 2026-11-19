@@ -1,0 +1,81 @@
+{
+    "version": "0.2.0",
+    "configurations": [
+        {
+            "name": "Debug delta training (self-attention)",
+            "type": "debugpy",
+            "request": "launch",
+            "python": "${workspaceFolder}/.venv/bin/python",
+            "cwd": "${workspaceFolder}",
+            "console": "integratedTerminal",
+            "justMyCode": true,
+            "module": "src.agents.rl.training.train_delta",
+            "args": [
+                "--trajectory-feature-strategy", "self-attention",
+                "--learning-starts", "0"
+            ]
+        },
+        {
+            "name": "Debug trajectory features unit test",
+            "type": "debugpy",
+            "request": "launch",
+            "python": "${workspaceFolder}/.venv/bin/python",
+            "cwd": "${workspaceFolder}",
+            "console": "integratedTerminal",
+            "justMyCode": true,
+            "module": "pytest",
+            "args": [
+                "tests/test_delta_actor_critic.py::test_features_remove_global_position_and_time_offset_but_keep_duration",
+                "-v",
+                "-s",
+                "--no-cov"
+            ]
+        },
+        {
+            "name": "Debug held-out SAC evaluation",
+            "type": "debugpy",
+            "request": "launch",
+            "python": "${workspaceFolder}/.venv/bin/python",
+            "cwd": "${workspaceFolder}",
+            "console": "integratedTerminal",
+            "justMyCode": true,
+            "stopOnEntry": true,
+            "module": "src.evaluation.rl.evaluate",
+            "args": ["--model", "artifacts/sac_pretrain/sac_final.pt"]
+        },
+        {
+            "name": "Debug SMC2 study",
+            "type": "debugpy",
+            "request": "launch",
+            "python": "${workspaceFolder}/.venv/bin/python",
+            "cwd": "${workspaceFolder}",
+            "console": "integratedTerminal",
+            "justMyCode": true,
+            "stopOnEntry": true,
+            "module": "src.evaluation.system_identification.demos.smc2_demo",
+            "args": ["--n-theta", "64", "--n-state", "8", "--seed", "7"]
+        },
+        {
+            "name": "Debug env demo",
+            "type": "debugpy",
+            "request": "launch",
+            "python": "${workspaceFolder}/.venv/bin/python",
+            "cwd": "${workspaceFolder}",
+            "console": "integratedTerminal",
+            "justMyCode": true,
+            "stopOnEntry": true,
+            "module": "src.simulation.tools.demos.env_demo"
+        },
+        {
+            "name": "Debug tipping tests",
+            "type": "debugpy",
+            "request": "launch",
+            "python": "${workspaceFolder}/.venv/bin/python",
+            "cwd": "${workspaceFolder}",
+            "console": "integratedTerminal",
+            "justMyCode": true,
+            "stopOnEntry": true,
+            "module": "src.simulation.tools.validation.tipping_tests"
+        }
+    ]
+}

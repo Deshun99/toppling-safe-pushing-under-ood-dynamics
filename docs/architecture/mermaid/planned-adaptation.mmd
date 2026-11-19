@@ -1,0 +1,37 @@
+---
+title: Planned online adaptation using physics imagination
+---
+flowchart LR
+    OBS["Observable target state"]
+    POL["SAC actor and critics"]
+    FIL["Pessimistic action filter"]
+    ENV["Target PushEnv"]
+    HIST["Object-specific ActionRecord history"]
+    FIT["System identification"]
+    HYP["Physics hypotheses<br/>Mass, friction, COM"]
+    SIM["Internal simulator"]
+    ROLL["Short imagined rollouts"]
+    TARGET["Target replay"]
+    SYN["Simulated replay"]
+    UPDATE["SAC update<br/>Controlled mixture of both buffers"]
+    OBS -->|"Policy observation"| POL
+    POL -.->|"Candidate actions and critic values"| FIL
+    FIL -.->|"Selected action"| ENV
+    ENV -.->|"Observed next state"| OBS
+    ENV -.->|"Executed action and dense trajectory"| HIST
+    HIST -.->|"Accumulated interaction evidence"| FIT
+    FIT -->|"Parameter estimates and hypotheses"| HYP
+    HYP -.->|"Candidate physics"| SIM
+    OBS -.->|"Rollout starting state"| ROLL
+    POL -.->|"Rollout actions"| ROLL
+    ROLL -.->|"Requests simulated pushes"| SIM
+    SIM -.->|"Predicted motion"| ROLL
+    FIL -.->|"Checks candidates across hypotheses"| SIM
+    SIM -.->|"Predicted peak tilt and toppling"| FIL
+    ROLL -.->|"Imagined transitions"| SYN
+    ENV -.->|"Target transitions"| TARGET
+    TARGET -.->|"Target samples"| UPDATE
+    SYN -.->|"Simulated samples"| UPDATE
+    UPDATE -.->|"Updated networks"| POL
+    classDef planned fill:#fff4d6,stroke:#a66b00,stroke-dasharray:5 5
+    class FIL,HIST,ROLL,SYN,UPDATE planned

@@ -1,0 +1,92 @@
+<mxfile host="app.diagrams.net">
+  <diagram name="Page-1" id="EjdVUVbxrk9XmXuJpyft">
+    <mxGraphModel dx="1378" dy="619" grid="1" gridSize="10" guides="1" tooltips="1" connect="1" arrows="1" fold="1" page="1" pageScale="1" pageWidth="850" pageHeight="1100" math="0" shadow="0">
+      <root>
+        <mxCell id="0" />
+        <mxCell id="1" parent="0" />
+        <mxCell id="VH4t-m-DKmUtRQV9HMIq-7" edge="1" parent="1" source="VH4t-m-DKmUtRQV9HMIq-1" style="edgeStyle=orthogonalEdgeStyle;rounded=0;orthogonalLoop=1;jettySize=auto;html=1;entryX=0;entryY=0.25;entryDx=0;entryDy=0;" target="VH4t-m-DKmUtRQV9HMIq-8">
+          <mxGeometry relative="1" as="geometry">
+            <mxPoint x="260" y="120" as="targetPoint" />
+          </mxGeometry>
+        </mxCell>
+        <mxCell id="VH4t-m-DKmUtRQV9HMIq-9" edge="1" parent="1" source="VH4t-m-DKmUtRQV9HMIq-1" style="edgeStyle=orthogonalEdgeStyle;rounded=0;orthogonalLoop=1;jettySize=auto;html=1;entryX=0;entryY=0.5;entryDx=0;entryDy=0;" target="VH4t-m-DKmUtRQV9HMIq-8">
+          <mxGeometry relative="1" as="geometry" />
+        </mxCell>
+        <mxCell id="VH4t-m-DKmUtRQV9HMIq-10" edge="1" parent="1" source="VH4t-m-DKmUtRQV9HMIq-1" style="edgeStyle=orthogonalEdgeStyle;rounded=0;orthogonalLoop=1;jettySize=auto;html=1;entryX=0;entryY=0.75;entryDx=0;entryDy=0;" target="VH4t-m-DKmUtRQV9HMIq-8">
+          <mxGeometry relative="1" as="geometry" />
+        </mxCell>
+        <mxCell id="VH4t-m-DKmUtRQV9HMIq-26" edge="1" parent="1" source="VH4t-m-DKmUtRQV9HMIq-1" style="edgeStyle=orthogonalEdgeStyle;rounded=0;orthogonalLoop=1;jettySize=auto;html=1;exitX=0.75;exitY=1;exitDx=0;exitDy=0;entryX=0;entryY=0.75;entryDx=0;entryDy=0;" target="VH4t-m-DKmUtRQV9HMIq-3">
+          <mxGeometry relative="1" as="geometry" />
+        </mxCell>
+        <mxCell id="VH4t-m-DKmUtRQV9HMIq-1" parent="1" style="whiteSpace=wrap;html=1;aspect=fixed;" value="Agent queries simulator" vertex="1">
+          <mxGeometry height="90" width="90" x="80" y="125" as="geometry" />
+        </mxCell>
+        <mxCell id="VH4t-m-DKmUtRQV9HMIq-4" edge="1" parent="1" source="VH4t-m-DKmUtRQV9HMIq-3" style="edgeStyle=orthogonalEdgeStyle;rounded=0;orthogonalLoop=1;jettySize=auto;html=1;entryX=0.5;entryY=1;entryDx=0;entryDy=0;" target="VH4t-m-DKmUtRQV9HMIq-1">
+          <mxGeometry relative="1" as="geometry">
+            <Array as="points">
+              <mxPoint x="342.53" y="360" />
+              <mxPoint x="162.52999999999997" y="360" />
+            </Array>
+          </mxGeometry>
+        </mxCell>
+        <mxCell id="VH4t-m-DKmUtRQV9HMIq-3" parent="1" style="whiteSpace=wrap;html=1;aspect=fixed;" value="Object moves" vertex="1">
+          <mxGeometry height="90" width="90" x="610" y="250" as="geometry" />
+        </mxCell>
+        <mxCell id="VH4t-m-DKmUtRQV9HMIq-5" parent="1" style="text;html=1;whiteSpace=wrap;strokeColor=none;fillColor=none;align=center;verticalAlign=middle;rounded=0;" value="action a" vertex="1">
+          <mxGeometry height="30" width="60" x="355" y="290" as="geometry" />
+        </mxCell>
+        <mxCell id="VH4t-m-DKmUtRQV9HMIq-6" parent="1" style="text;html=1;whiteSpace=wrap;strokeColor=none;fillColor=none;align=center;verticalAlign=middle;rounded=0;" value="&lt;div&gt;Agent observes:&lt;/div&gt;&lt;div&gt;&lt;span style=&quot;background-color: rgb(53, 55, 56);&quot;&gt;&amp;lt;(v, ω, d)&amp;gt;&lt;/span&gt;&lt;/div&gt;" vertex="1">
+          <mxGeometry height="60" width="155" x="307.5" y="350" as="geometry" />
+        </mxCell>
+        <mxCell id="VH4t-m-DKmUtRQV9HMIq-19" edge="1" parent="1" source="VH4t-m-DKmUtRQV9HMIq-23" style="edgeStyle=orthogonalEdgeStyle;rounded=0;orthogonalLoop=1;jettySize=auto;html=1;entryX=0.5;entryY=0;entryDx=0;entryDy=0;exitX=0.029;exitY=0.679;exitDx=0;exitDy=0;exitPerimeter=0;" target="VH4t-m-DKmUtRQV9HMIq-1">
+          <mxGeometry relative="1" as="geometry">
+            <Array as="points">
+              <mxPoint x="610" y="161.79" />
+              <mxPoint x="610" y="70" />
+              <mxPoint x="125.03" y="70" />
+            </Array>
+          </mxGeometry>
+        </mxCell>
+        <mxCell id="VH4t-m-DKmUtRQV9HMIq-20" edge="1" parent="1" source="VH4t-m-DKmUtRQV9HMIq-8" style="edgeStyle=orthogonalEdgeStyle;rounded=0;orthogonalLoop=1;jettySize=auto;html=1;exitX=1;exitY=0.25;exitDx=0;exitDy=0;entryX=0.25;entryY=0;entryDx=0;entryDy=0;" target="VH4t-m-DKmUtRQV9HMIq-1">
+          <mxGeometry relative="1" as="geometry">
+            <Array as="points">
+              <mxPoint x="610" y="140" />
+              <mxPoint x="610" y="40" />
+              <mxPoint x="102.48" y="40" />
+            </Array>
+          </mxGeometry>
+        </mxCell>
+        <mxCell id="VH4t-m-DKmUtRQV9HMIq-21" edge="1" parent="1" source="VH4t-m-DKmUtRQV9HMIq-8" style="edgeStyle=orthogonalEdgeStyle;rounded=0;orthogonalLoop=1;jettySize=auto;html=1;exitX=1;exitY=0.75;exitDx=0;exitDy=0;entryX=0.75;entryY=0;entryDx=0;entryDy=0;" target="VH4t-m-DKmUtRQV9HMIq-1">
+          <mxGeometry relative="1" as="geometry">
+            <Array as="points">
+              <mxPoint x="610" y="200" />
+              <mxPoint x="610" y="90" />
+              <mxPoint x="147.52" y="90" />
+            </Array>
+          </mxGeometry>
+        </mxCell>
+        <mxCell id="VH4t-m-DKmUtRQV9HMIq-8" parent="1" style="whiteSpace=wrap;html=1;" value="Simulator" vertex="1">
+          <mxGeometry height="120" width="120" x="320" y="110" as="geometry" />
+        </mxCell>
+        <mxCell id="VH4t-m-DKmUtRQV9HMIq-14" parent="1" style="text;html=1;whiteSpace=wrap;strokeColor=none;fillColor=none;align=center;verticalAlign=middle;rounded=0;" value="&lt;span style=&quot;background-color: rgb(211, 213, 214);&quot;&gt;&amp;lt;(m1, fc1, COM1), a&amp;gt;&lt;/span&gt;" vertex="1">
+          <mxGeometry height="10" width="175" x="180" y="125" as="geometry" />
+        </mxCell>
+        <mxCell id="VH4t-m-DKmUtRQV9HMIq-17" parent="1" style="text;html=1;whiteSpace=wrap;strokeColor=none;fillColor=none;align=center;verticalAlign=middle;rounded=0;" value="&lt;span style=&quot;background-color: rgb(211, 213, 214);&quot;&gt;&amp;lt;(m2, fc2, COM2), a&amp;gt;&lt;/span&gt;" vertex="1">
+          <mxGeometry height="10" width="175" x="180" y="155" as="geometry" />
+        </mxCell>
+        <mxCell id="VH4t-m-DKmUtRQV9HMIq-18" parent="1" style="text;html=1;whiteSpace=wrap;strokeColor=none;fillColor=none;align=center;verticalAlign=middle;rounded=0;" value="&lt;span style=&quot;background-color: rgb(211, 213, 214);&quot;&gt;&amp;lt;(m3, fc3, COM3), a&amp;gt;&lt;/span&gt;" vertex="1">
+          <mxGeometry height="10" width="175" x="180" y="185" as="geometry" />
+        </mxCell>
+        <mxCell id="VH4t-m-DKmUtRQV9HMIq-22" parent="1" style="text;html=1;whiteSpace=wrap;strokeColor=none;fillColor=none;align=center;verticalAlign=middle;rounded=0;" value="&lt;span style=&quot;background-color: rgb(211, 213, 214);&quot;&gt;&amp;lt;(v1, ω1, d1)&amp;gt;&lt;/span&gt;" vertex="1">
+          <mxGeometry height="10" width="175" x="435" y="125" as="geometry" />
+        </mxCell>
+        <mxCell id="VH4t-m-DKmUtRQV9HMIq-23" parent="1" style="text;html=1;whiteSpace=wrap;strokeColor=none;fillColor=none;align=center;verticalAlign=middle;rounded=0;" value="&lt;span style=&quot;background-color: rgb(211, 213, 214);&quot;&gt;&amp;lt;(v2, ω2, d2)&amp;gt;&lt;/span&gt;" vertex="1">
+          <mxGeometry height="10" width="175" x="435" y="145" as="geometry" />
+        </mxCell>
+        <mxCell id="VH4t-m-DKmUtRQV9HMIq-25" parent="1" style="text;html=1;whiteSpace=wrap;strokeColor=none;fillColor=none;align=center;verticalAlign=middle;rounded=0;" value="&lt;span style=&quot;background-color: rgb(211, 213, 214);&quot;&gt;&amp;lt;(v3, ω3, d3)&amp;gt;&lt;/span&gt;" vertex="1">
+          <mxGeometry height="10" width="175" x="435" y="185" as="geometry" />
+        </mxCell>
+      </root>
+    </mxGraphModel>
+  </diagram>
+</mxfile>

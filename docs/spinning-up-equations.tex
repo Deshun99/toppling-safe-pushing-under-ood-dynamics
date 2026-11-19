@@ -1,0 +1,327 @@
+\documentclass[11pt,a4paper]{article}
+\usepackage[margin=22mm]{geometry}
+\usepackage{amsmath,amssymb,graphicx,booktabs,array}
+\usepackage[colorlinks=true,linkcolor=black,urlcolor=blue]{hyperref}
+\usepackage{fancyhdr}
+\pagestyle{fancy}\fancyhf{}\fancyhead[L]{DDPG, TD3, and SAC: motivation and mathematics}\fancyfoot[C]{\thepage}
+\setlength{\headheight}{14pt}
+\setlength{\parindent}{0pt}\setlength{\parskip}{7pt}
+\newcommand{\underE}[2]{\underset{\substack{#1}}{\mathrm E}\left[#2\right]}
+\newsavebox{\eqbox}
+\newcommand{\fitmath}[1]{\begin{equation}\sbox{\eqbox}{$\displaystyle #1$}\ifdim\wd\eqbox>.94\linewidth\resizebox{.94\linewidth}{!}{\usebox{\eqbox}}\else\usebox{\eqbox}\fi\end{equation}}
+\newcommand{\motivation}[1]{\subsection{Why this algorithm?}\noindent\fbox{\begin{minipage}{.94\linewidth}#1\end{minipage}}\par}
+\begin{document}
+\begin{center}{\LARGE\bfseries DDPG, TD3, and SAC}\\[6pt]{\large Motivation and mathematical foundations}\end{center}
+\textbf{Reading guide.} Each algorithm starts with its motivation, followed by equations in source order with short explanations. This is a mathematical study note: implementation code, pseudocode instructions, isolated symbol lists, and repeated API-documentation copies are omitted. Repeated targets in the update rules are referenced rather than printed again. Equation numbering is added for navigation; mathematical notation follows Spinning Up.
+
+\textbf{Sources.} OpenAI Spinning Up documentation, retrieved 18 October 2026. Each algorithm section links to its source page. Motivation summaries paraphrase those pages.
+\subsection*{Notation used throughout}
+\begin{tabular}{@{}p{.25\linewidth}p{.69\linewidth}@{}}\toprule
+Symbol & Meaning\\\midrule
+$s,a,r,s'$ & State, action, observed reward, and next state.\\
+$\gamma,d$ & Discount factor and terminal indicator; $d=1$ means the next state is terminal.\\
+$\mathcal D,B$ & Replay buffer and sampled minibatch; $|B|$ is the minibatch size.\\
+$\theta,\phi_i$ & Policy parameters and critic parameters. A single critic uses $\phi$.\\
+$\mathrm{targ},\rho$ & Target-network subscript and Polyak averaging coefficient, usually close to 1.\\
+$\mu_\theta,\pi_\theta$ & Deterministic policy and stochastic policy, respectively.\\
+$\alpha,H$ & Entropy coefficient and entropy.\\\bottomrule
+\end{tabular}
+\tableofcontents
+
+
+\clearpage
+
+\section{Deep Deterministic Policy Gradient}
+
+\textbf{Source:} \url{https://spinningup.openai.com/en/latest/algorithms/ddpg.html}
+
+\motivation{\textbf{Problem: continuous-action maximization.} Q-learning needs the action that maximizes a learned value function. Enumerating actions is practical for a small discrete action set, but impossible for a continuous one; repeatedly solving a numerical optimization problem is expensive.
+
+\textbf{DDPG's idea.} Learn a deterministic actor that approximates the maximizing action, using gradients through the critic. Learn the critic from off-policy transitions. Replay reuses experience, while slowly changing target networks reduce instability in the Bellman targets.}
+
+\subsection{Equations and their roles}
+
+\subsubsection*{Choosing an optimal action}
+
+The optimal action maximizes the optimal action-value function.
+
+\fitmath{a^*(s) = \arg \max_a Q^*(s,a).}
+
+\subsubsection*{Replacing action optimization with an actor}
+
+The actor approximates the maximizer, avoiding a separate optimization at each decision.
+
+\fitmath{\max_a Q(s,a) \approx Q(s,\mu(s))}
+
+\subsubsection*{Optimal Bellman equation}
+
+Here $s'\sim P$ abbreviates sampling from the transition distribution $P(\cdot\mid s,a)$.
+
+\fitmath{Q^*(s,a) = \underset{s' \sim P}{{\mathrm E}}\left[r(s,a) + \gamma \max_{a'} Q^*(s', a')\right]}
+
+\subsubsection*{Initial mean-squared Bellman error}
+
+This preliminary loss uses the same critic in the prediction and target, which can make learning unstable.
+
+\fitmath{L(\phi, {\mathcal D}) = \underset{(s,a,r,s',d) \sim {\mathcal D}}{{\mathrm E}}\left[
+    \Bigg( Q_{\phi}(s,a) - \left(r + \gamma (1 - d) \max_{a'} Q_{\phi}(s',a') \right) \Bigg)^2
+    \right]}
+
+\subsubsection*{The bootstrap target}
+
+The following is the target term inside that loss; it is an expression, not a separate optimization objective.
+
+\fitmath{r + \gamma (1 - d) \max_{a'} Q_{\phi}(s',a')}
+
+\subsubsection*{A slowly changing target critic}
+
+Polyak averaging makes the target critic track the learned critic gradually.
+
+\fitmath{\phi_{\text{targ}} \leftarrow \rho \phi_{\text{targ}} + (1 - \rho) \phi,}
+
+\subsubsection*{DDPG critic loss}
+
+The practical loss uses a target critic and a target actor. The terminal factor removes future value at terminal transitions.
+
+\fitmath{L(\phi, {\mathcal D}) = \underset{(s,a,r,s',d) \sim {\mathcal D}}{{\mathrm E}}\left[
+    \Bigg( Q_{\phi}(s,a) - \left(r + \gamma (1 - d) Q_{\phi_{\text{targ}}}(s', \mu_{\theta_{\text{targ}}}(s')) \right) \Bigg)^2
+    \right],}
+
+\subsubsection*{Actor objective}
+
+Maximize the critic value of the actor action, treating critic parameters as fixed.
+
+\fitmath{\max_{\theta} \underset{s \sim {\mathcal D}}{{\mathrm E}}\left[ Q_{\phi}(s, \mu_{\theta}(s)) \right].}
+
+\subsubsection*{Exploration action}
+
+Training adds Gaussian exploration noise and clips actions to the valid range. The source leaves the Gaussian parameters unspecified here.
+
+\fitmath{a = \text{clip}(\mu_{\theta}(s) + \epsilon, a_{Low}, a_{High}),\qquad \epsilon\sim\mathcal N}
+
+\subsubsection*{Minibatch target}
+
+This target is used for the critic gradient below.
+
+\fitmath{y(r,s',d) = r + \gamma (1-d) Q_{\phi_{\text{targ}}}(s', \mu_{\theta_{\text{targ}}}(s'))}
+
+\subsubsection*{Critic gradient}
+
+Take a descent step using this minibatch gradient.
+
+\fitmath{\nabla_{\phi} \frac{1}{|B|}\sum_{(s,a,r,s',d) \in B} \left( Q_{\phi}(s,a) - y(r,s',d) \right)^2}
+
+\subsubsection*{Actor gradient}
+
+Take an ascent step using this minibatch gradient.
+
+\fitmath{\nabla_{\theta} \frac{1}{|B|}\sum_{s \in B}Q_{\phi}(s, \mu_{\theta}(s))}
+
+\subsubsection*{Target-network updates}
+
+Initialize target networks from their corresponding learned networks, then apply these updates.
+
+\fitmath{\begin{aligned}
+                    \phi_{\text{targ}} &\leftarrow \rho \phi_{\text{targ}} + (1-\rho) \phi \\
+                    \theta_{\text{targ}} &\leftarrow \rho \theta_{\text{targ}} + (1-\rho) \theta
+                \end{aligned}}
+
+\clearpage
+
+\section{Twin Delayed DDPG}
+
+\textbf{Source:} \url{https://spinningup.openai.com/en/latest/algorithms/td3.html}
+
+\motivation{\textbf{Problem: the actor exploits critic errors.} DDPG can overestimate action values. Its actor can then select actions because their estimated values are wrong, producing brittle behavior.
+
+\textbf{TD3's three changes.} Use the smaller of two target critics to limit overestimation; update the actor and target networks less frequently than the critics; and smooth target actions with clipped noise to discourage exploitation of narrow, erroneous peaks.}
+
+\subsection{Equations and their roles}
+
+\subsubsection*{Target policy smoothing}
+
+Clip noise to $[-c,c]$, add it to the target action, and clip the result to the action bounds. The Gaussian notation is retained exactly as on the page.
+
+\fitmath{a'(s') = \text{clip}\left(\mu_{\theta_{\text{targ}}}(s') + \text{clip}(\epsilon,-c,c), a_{Low}, a_{High}\right), \;\;\;\;\; \epsilon \sim \mathcal{N}(0, \sigma)}
+
+\subsubsection*{Clipped double-Q target}
+
+Use the smaller target-critic value as the shared backup.
+
+\fitmath{y(r,s',d) = r + \gamma (1 - d) \min_{i=1,2} Q_{\phi_{i, \text{targ}}}(s', a'(s')),}
+
+\subsubsection*{First critic loss}
+
+Both critics regress toward the same target.
+
+\fitmath{L(\phi_1, {\mathcal D}) = \underE{(s,a,r,s',d) \sim {\mathcal D}}{
+    \Bigg( Q_{\phi_1}(s,a) - y(r,s',d) \Bigg)^2
+    },}
+
+\subsubsection*{Second critic loss}
+
+The second critic has separate parameters but uses the same backup.
+
+\fitmath{L(\phi_2, {\mathcal D}) = \underE{(s,a,r,s',d) \sim {\mathcal D}}{
+    \Bigg( Q_{\phi_2}(s,a) - y(r,s',d) \Bigg)^2
+    }.}
+
+\subsubsection*{Actor objective}
+
+The actor maximizes the first critic.
+
+\fitmath{\max_{\theta} \underset{s \sim {\mathcal D}}{{\mathrm E}}\left[ Q_{\phi_1}(s, \mu_{\theta}(s)) \right],}
+
+\subsubsection*{Exploration action}
+
+As in DDPG, training actions include exploration noise. This is distinct from noise used to smooth target actions.
+
+\fitmath{a = \text{clip}(\mu_{\theta}(s) + \epsilon, a_{Low}, a_{High}),\qquad \epsilon\sim\mathcal N}
+
+\subsubsection*{Critic gradients}
+
+Take descent steps for both critics using the target above.
+
+\fitmath{\begin{aligned}
+                    & \nabla_{\phi_i} \frac{1}{|B|}\sum_{(s,a,r,s',d) \in B} \left( Q_{\phi_i}(s,a) - y(r,s',d) \right)^2 && \text{for } i=1,2
+                \end{aligned}}
+
+\subsubsection*{Delayed actor gradient}
+
+Take an ascent step less frequently than the critic updates. Spinning Up describes one policy update for every two critic updates as the paper recommendation.
+
+\fitmath{\nabla_{\theta} \frac{1}{|B|}\sum_{s \in B}Q_{\phi_1}(s, \mu_{\theta}(s))}
+
+\subsubsection*{Delayed target-network updates}
+
+Initialize targets from their learned counterparts. Apply these averages only when the actor is updated.
+
+\fitmath{\begin{aligned}
+                        \phi_{\text{targ},i} &\leftarrow \rho \phi_{\text{targ}, i} + (1-\rho) \phi_i && \text{for } i=1,2\\
+                        \theta_{\text{targ}} &\leftarrow \rho \theta_{\text{targ}} + (1-\rho) \theta
+                    \end{aligned}}
+
+\clearpage
+
+\section{Soft Actor-Critic}
+
+\textbf{Source:} \url{https://spinningup.openai.com/en/latest/algorithms/sac.html}
+
+\motivation{\textbf{Problem: premature concentration of the policy.} Optimizing reward alone can concentrate a policy too early on poor behavior. An entropy bonus rewards randomness, encouraging exploration and helping avoid poor local optima.
+
+\textbf{SAC's idea.} Learn a stochastic actor and off-policy critics using a reward-plus-entropy objective. SAC shares clipped double-Q learning with TD3, but was developed roughly concurrently with it: it is not a direct successor built to repair TD3. Stochastic actions provide an effect similar to target policy smoothing; no target actor is required in the version presented here.}
+
+\subsection{Equations and their roles}
+
+\subsubsection*{Entropy}
+
+Entropy measures randomness under a probability mass or density function.
+
+\fitmath{H(P) = \underE{x \sim P}{-\log P(x)}.}
+
+\subsubsection*{Entropy-regularized objective}
+
+The trajectory $\tau$ follows the policy. The positive coefficient $\alpha$ trades off reward and entropy.
+
+\fitmath{\pi^* = \arg \max_{\pi} \underE{\tau \sim \pi}{ \sum_{t=0}^{\infty} \gamma^t \bigg( R(s_t, a_t, s_{t+1}) + \alpha H\left(\pi(\cdot|s_t)\right) \bigg)},}
+
+\subsubsection*{State value with entropy}
+
+The state value includes entropy bonuses from the first timestep onward.
+
+\fitmath{V^{\pi}(s) = \underE{\tau \sim \pi}{ \left. \sum_{t=0}^{\infty} \gamma^t \bigg( R(s_t, a_t, s_{t+1}) + \alpha H\left(\pi(\cdot|s_t)\right) \bigg) \right| s_0 = s}}
+
+\subsubsection*{Action value with entropy}
+
+The action value excludes the entropy bonus at the first timestep. This convention explains the difference from the state value.
+
+\fitmath{Q^{\pi}(s,a) = \underE{\tau \sim \pi}{ \left. \sum_{t=0}^{\infty} \gamma^t  R(s_t, a_t, s_{t+1}) + \alpha \sum_{t=1}^{\infty} \gamma^t H\left(\pi(\cdot|s_t)\right)\right| s_0 = s, a_0 = a}}
+
+\subsubsection*{Connecting state and action values}
+
+Average over the current action, then add the current-state entropy bonus.
+
+\fitmath{V^{\pi}(s) = \underE{a \sim \pi}{Q^{\pi}(s,a)} + \alpha H\left(\pi(\cdot|s)\right)}
+
+\subsubsection*{Entropy-regularized Bellman equation}
+
+The next-state value includes both future return and next-state policy entropy.
+
+\fitmath{\begin{aligned}Q^{\pi}(s,a) &= \underE{s' \sim P \\ a' \sim \pi}{R(s,a,s') + \gamma\left(Q^{\pi}(s',a') + \alpha H\left(\pi(\cdot|s')\right) \right)} \\
+&= \underE{s' \sim P}{R(s,a,s') + \gamma V^{\pi}(s')}.\end{aligned}}
+
+\subsubsection*{Writing entropy as a log-probability}
+
+Replacing expected entropy with expected negative log-probability yields the form used in learning.
+
+\fitmath{\begin{aligned}Q^{\pi}(s,a) &= \underE{s' \sim P \\ a' \sim \pi}{R(s,a,s') + \gamma\left(Q^{\pi}(s',a') + \alpha H\left(\pi(\cdot|s')\right) \right)} \\
+&= \underE{s' \sim P \\ a' \sim \pi}{R(s,a,s') + \gamma\left(Q^{\pi}(s',a') - \alpha \log \pi(a'|s') \right)}\end{aligned}}
+
+\subsubsection*{A sampled Bellman backup}
+
+Sample $\tilde a'$ freshly from the policy; the reward and next state come from replay.
+
+\fitmath{\begin{aligned}Q^{\pi}(s,a) &\approx r + \gamma\left(Q^{\pi}(s',\tilde{a}') - \alpha \log \pi(\tilde{a}'|s') \right), \;\;\;\;\;  \tilde{a}' \sim \pi(\cdot|s').\end{aligned}}
+
+\subsubsection*{Critic loss}
+
+Each critic regresses toward a shared target.
+
+\fitmath{L(\phi_i, {\mathcal D}) = \underset{(s,a,r,s',d) \sim {\mathcal D}}{{\mathrm E}}\left[
+    \Bigg( Q_{\phi_i}(s,a) - y(r,s',d) \Bigg)^2
+    \right],}
+
+\subsubsection*{SAC target}
+
+The minimum of two target critics limits overestimation. The entropy contribution is $-\alpha\log\pi_\theta$; next actions come from the current policy.
+
+\fitmath{y(r, s', d) = r + \gamma (1 - d) \left( \min_{j=1,2} Q_{\phi_{\text{targ},j}}(s', \tilde{a}') - \alpha \log \pi_{\theta}(\tilde{a}'|s') \right), \;\;\;\;\; \tilde{a}' \sim \pi_{\theta}(\cdot|s').}
+
+\subsubsection*{Policy value objective}
+
+The actor seeks both high value and high entropy.
+
+\fitmath{\begin{aligned}V^{\pi}(s) &= \underE{a \sim \pi}{Q^{\pi}(s,a)} + \alpha H\left(\pi(\cdot|s)\right) \\
+&= \underE{a \sim \pi}{Q^{\pi}(s,a) - \alpha \log \pi(a|s)}.\end{aligned}}
+
+\subsubsection*{Reparameterized action}
+
+The Gaussian mean and standard deviation are $\mu_\theta(s)$ and $\sigma_\theta(s)$. The operator $\odot$ is elementwise multiplication; $\tanh$ bounds the action.
+
+\fitmath{\tilde{a}_{\theta}(s, \xi) = \tanh\left( \mu_{\theta}(s) + \sigma_{\theta}(s) \odot \xi \right), \;\;\;\;\; \xi \sim \mathcal{N}(0, I).}
+
+\subsubsection*{Moving randomness outside the policy}
+
+Reparameterization permits differentiation through the sampled action.
+
+\fitmath{\underE{a \sim \pi_{\theta}}{Q^{\pi_{\theta}}(s,a) - \alpha \log \pi_{\theta}(a|s)} = \underE{\xi \sim \mathcal{N}}{Q^{\pi_{\theta}}(s,\tilde{a}_{\theta}(s,\xi)) - \alpha \log \pi_{\theta}(\tilde{a}_{\theta}(s,\xi)|s)}}
+
+\subsubsection*{Practical actor objective}
+
+Use the smaller learned critic in the entropy-regularized objective. This page uses a fixed entropy coefficient.
+
+\fitmath{\begin{aligned}\max_{\theta} \underE{s \sim \mathcal{D} \\ \xi \sim \mathcal{N}}{\min_{j=1,2} Q_{\phi_j}(s,\tilde{a}_{\theta}(s,\xi)) - \alpha \log \pi_{\theta}(\tilde{a}_{\theta}(s,\xi)|s)},\end{aligned}}
+
+\subsubsection*{Minibatch critic gradients}
+
+Take descent steps for both critics using the SAC target above.
+
+\fitmath{\begin{aligned}
+                    & \nabla_{\phi_i} \frac{1}{|B|}\sum_{(s,a,r,s',d) \in B} \left( Q_{\phi_i}(s,a) - y(r,s',d) \right)^2 && \text{for } i=1,2
+                \end{aligned}}
+
+\subsubsection*{Minibatch actor gradient}
+
+Take an ascent step. Here $\tilde a_\theta(s)$ denotes a differentiable action sample from the current policy, using reparameterization.
+
+\fitmath{\nabla_{\theta} \frac{1}{|B|}\sum_{s \in B} \Big(\min_{i=1,2} Q_{\phi_i}(s, \tilde{a}_{\theta}(s)) - \alpha \log \pi_{\theta} \left(\left. \tilde{a}_{\theta}(s) \right| s\right) \Big),}
+
+\subsubsection*{Target-critic updates}
+
+Initialize target critics from learned critics, then apply Polyak averaging. SAC has no target actor in this formulation.
+
+\fitmath{\begin{aligned}
+                    \phi_{\text{targ},i} &\leftarrow \rho \phi_{\text{targ}, i} + (1-\rho) \phi_i && \text{for } i=1,2
+                \end{aligned}}
+
+\end{document}

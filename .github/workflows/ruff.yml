@@ -1,0 +1,33 @@
+name: Ruff
+
+on:
+  pull_request:
+  push:
+    branches: [main]
+  workflow_dispatch:
+
+permissions:
+  contents: read
+
+concurrency:
+  group: ruff-${{ github.workflow }}-${{ github.ref }}
+  cancel-in-progress: ${{ github.event_name == 'pull_request' }}
+
+jobs:
+  lint:
+    runs-on: ubuntu-24.04
+    timeout-minutes: 5
+    steps:
+      - uses: actions/checkout@v4
+      - uses: actions/setup-python@v5
+        with:
+          python-version: '3.11'
+      - name: Install Ruff
+        run: python -m pip install ruff
+      - name: Lint (warnings only)
+        shell: bash
+        run: |
+          # Keep tool/configuration failures visible; only lint findings are advisory.
+          ruff check --exit-zero --output-format=github . > "$RUNNER_TEMP/ruff-annotations.txt"
+          # Ruff emits error annotations by default; display each finding as a warning.
+          sed 's/^::error /::warning /' "$RUNNER_TEMP/ruff-annotations.txt"

@@ -24,6 +24,12 @@ from src.simulation.modelling.records import ActionRecord
 
 
 @dataclass
+class ImaginationStats:
+    transitions: int = 0
+    topples: int = 0
+    successes: int = 0
+
+
 def _score_push_outcome(
     end: ObjectState,
     spec: CuboidSpec,
@@ -52,12 +58,6 @@ def _score_push_outcome(
         goal_tolerance=epsilon,
     )
     return reward, toppled, success
-
-
-class ImaginationStats:
-    transitions: int = 0
-    topples: int = 0
-    successes: int = 0
 
 
 @dataclass
